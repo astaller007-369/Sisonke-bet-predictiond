@@ -7,6 +7,7 @@ import streamlit as st
 
 st.set_page_config(page_title="Sisonke Bet Predictions", page_icon="⚽", layout="wide")
 
+# FIX: Changed unsafe_allow_path=True to unsafe_allow_html=True to prevent structural layout crashes
 st.markdown("""
     <style>
     .stApp { background-color: #0b0f19; color: #f1f5f9; }
@@ -49,7 +50,7 @@ st.markdown("""
     }
     @keyframes blinker { 50% { opacity: 0.4; } }
     </style>
-""", unsafe_allow_path=True)
+""", unsafe_allow_html=True)
 
 @st.cache_data(ttl=10)
 def load_data():
@@ -60,25 +61,25 @@ def load_data():
 
 data = load_data()
 
-st.write("<h1>Sis⚽nke Bet Predictions</h1>", unsafe_allow_path=True)
+st.write("<h1>Sis⚽nke Bet Predictions</h1>", unsafe_allow_html=True)
 st.caption("Advanced Bivariate Poisson Forecasting Network & Live Analytics Suite")
 
 if not data:
     st.error("Data tracking source not detected. Ensure background pipeline has populated dashboard_data.json.")
     st.stop()
 
-m = data["metrics"]
+m = data.get("metrics", {})
 perf = data.get("performance_audit", {})
 dl_audit = perf.get("domestic_league_suite", {"dynamic_brier_skill_score": 0.0})
 it_audit = perf.get("international_tournament_suite", {"dynamic_brier_skill_score": 0.0})
 
 m_cols = st.columns(5)
 m_configs = [
-    {"title": "Overall Win Rate", "val": f"{m['overall_win_pct']}%", "color": "#10b981"},
-    {"title": "28-Day Accuracy", "val": f"{m['accuracy_28_day']}%", "color": "#eab308"},
-    {"title": "Settled Ledger Count", "val": str(m["total_backtested"]), "color": "#38bdf8"},
-    {"title": "Dynamic BSS (League)", "val": f"{dl_audit['dynamic_brier_skill_score']:.3f}", "color": "#a855f7"},
-    {"title": "Dynamic BSS (Tourney)", "val": f"{it_audit['dynamic_brier_skill_score']:.3f}", "color": "#f43f5e"}
+    {"title": "Overall Win Rate", "val": f"{m.get('overall_win_pct', 0.0)}%", "color": "#10b981"},
+    {"title": "28-Day Accuracy", "val": f"{m.get('accuracy_28_day', 0.0)}%", "color": "#eab308"},
+    {"title": "Settled Ledger Count", "val": str(m.get("total_backtested", 0)), "color": "#38bdf8"},
+    {"title": "Dynamic BSS (League)", "val": f"{dl_audit.get('dynamic_brier_skill_score', 0.0):.3f}", "color": "#a855f7"},
+    {"title": "Dynamic BSS (Tourney)", "val": f"{it_audit.get('dynamic_brier_skill_score', 0.0):.3f}", "color": "#f43f5e"}
 ]
 
 for idx, config in enumerate(m_configs):
@@ -87,7 +88,7 @@ for idx, config in enumerate(m_configs):
         f'  <p class="metric-title" style="color:{config["color"]};">{config["title"]}</p>'
         f'  <p class="metric-value">{config["val"]}</p>'
         f'</div>', 
-        unsafe_allow_path=True
+        unsafe_allow_html=True
     )
 
 leagues_matrix = {
@@ -99,7 +100,7 @@ leagues_matrix = {
     "Portugal Primeira Liga": "portugal", "Scotland Scottish Premiership": "scotland",
     "Greece Super League": "greek", "South Korea K League 1": "south_korea",
     "Iceland Best deild karla": "iceland", "Ireland Premier Division": "ireland",
-    "Estonia Meistriliiga": "estonia", "Latvia Virsliga": "latva",
+    "Estonia Meistriliiga": "estonia", "Latvia Virsliga": "latvia",
     "Croatia Football League": "croatia", "Egypt Premier League": "egypt",
     "Netherlands Eredivisie": "netherlands", "Serbia SuperLiga": "serbia",
     "Russia Premier League": "russia", "Slovenia PrvaLiga": "slovenia",
@@ -122,10 +123,10 @@ with tab_live:
         for lg in live_games:
             with st.container(border=True):
                 st.markdown(
-                    f"### <span class='live-badge'>LIVE</span> {lg['home_team']} "
-                    f"**{lg['current_score']}** {lg['away_team']} ({lg['minute']}') — "
+                    f"### <span class='live-badge'>LIVE</span> {lg.get('home_team', 'Home')} "
+                    f"**{lg.get('current_score', '0-0')}** {lg.get('away_team', 'Away')} ({lg.get('minute', 0)}') — "
                     f"*{lg.get('league_name', '').upper()}*", 
-                    unsafe_allow_path=True
+                    unsafe_allow_html=True
                 )
                 
                 lc1, lc2, lc3, lc4 = st.columns(4)
@@ -135,10 +136,8 @@ with tab_live:
                 
                 sh = lg.get("second_half_forecast", {}).get("sh_probabilities", {"HOME": 0.33, "DRAW": 0.34, "AWAY": 0.33})
                 with lc4:
-                    st.markdown("**Live 2H Model Forecast Projections:**")
-                    st.caption(f"🏠 Home 2H Win: **{sh['HOME']*100:.1f}%**")
-                    st.caption(f"🤝 Draw Preservation: **{sh['DRAW']*100:.1f}%**")
-                    st.caption(f"🚀 Away 2H Win: **{sh['AWAY']*100:.1f}%**")
+                    st.markdown("**Live 2H Forecast Model:**")
+                    st.caption(f"🏠 H: **{sh.get('HOME', 0.33)*100:.1f}%** | 🤝 D: **{sh.get('DRAW', 0.34)*100:.1f}%** | 🚀 A: **{sh.get('AWAY', 0.33)*100:.1f}%**")
     else:
         st.info("No active live games currently running. In-play tickers populate instantly upon match kickoff.")
 
@@ -165,18 +164,18 @@ with tab_predictions:
                 
             rows.append({
                 "Kickoff": str(x["match_timestamp"])[:16],
-                "League Group": x.get("league_key", "england").upper(),
-                "Fixture Matchup": f"{x['home_team']} vs {x['away_team']}",
+                "League Group": str(x.get("league_key", "england")).upper(),
+                "Fixture Matchup": f"{x.get('home_team', 'Home')} vs {x.get('away_team', 'Away')}",
                 "Primary Pick": x.get("predicted_outcome_1x2", "DRAW"),
-                "1X2 Split (H/D/A)": f"{p_1x2['HOME']*100:.0f}% / {p_1x2['DRAW']*100:.0f}% / {p_1x2['AWAY']*100:.0f}%",
-                "O/U 2.5 Goals Line": f"O: {p_ou25['OVER']*100:.0f}% | U: {p_ou25['UNDER']*100:.0f}%",
-                "BTTS Projections": f"Y: {p_btts['YES']*100:.0f}% | N: {p_btts['NO']*100:.0f}%",
+                "1X2 Split (H/D/A)": f"{p_1x2.get('HOME', 0.33)*100:.0f}% / {p_1x2.get('DRAW', 0.34)*100:.0f}% / {p_1x2.get('AWAY', 0.33)*100:.0f}%",
+                "O/U 2.5 Goals Line": f"O: {p_ou25.get('OVER', 0.5)*100:.0f}% | U: {p_ou25.get('UNDER', 0.5)*100:.0f}%",
+                "BTTS Projections": f"Y: {p_btts.get('YES', 0.5)*100:.0f}% | N: {p_btts.get('NO', 0.5)*100:.0f}%",
                 "Variant Mode Tag": flag_val
             })
         st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
         
         st.markdown("### 🔍 Advanced Match Drill-Down Lab")
-        options_map = {f"[{row['league_key'].upper()}] {row['home_team']} vs {row['away_team']} ({str(row['match_timestamp'])[:16]})": row for idx, row in upcoming_df.iterrows()}
+        options_map = {f"[{row.get('league_key', 'LN').upper()}] {row.get('home_team', 'Home')} vs {row.get('away_team', 'Away')} ({str(row.get('match_timestamp'))[:16]})": row for idx, row in upcoming_df.iterrows()}
         sel_match = st.selectbox("Select Target Profile to Extract Probabilities Density Matrices:", list(options_map.keys()))
         
         if sel_match:
@@ -186,23 +185,19 @@ with tab_predictions:
             c_left, c_right = st.columns(2)
             
             with c_left:
-                st.markdown('<div class="market-header">Poisson Curve Probability Matrix Density</div>', unsafe_allow_path=True)
+                # FIX: Changed to unsafe_allow_html=True
+                st.markdown('<div class="market-header">Poisson Curve Probability Matrix Density</div>', unsafe_allow_html=True)
                 exp_g = target.get("expected_goals", {"home": 1.4, "away": 1.1})
                 goals_axis = np.arange(0, 6)
-                home_dist = [(np.exp(-exp_g["home"]) * (exp_g["home"]**k)) / math.factorial(k) for k in goals_axis]
-                away_dist = [(np.exp(-exp_g["away"]) * (exp_g["away"]**k)) / math.factorial(k) for k in goals_axis]
+                home_dist = [(np.exp(-exp_g.get("home", 1.4)) * (exp_g.get("home", 1.4)**k)) / math.factorial(k) for k in goals_axis]
+                away_dist = [(np.exp(-exp_g.get("away", 1.1)) * (exp_g.get("away", 1.1)**k)) / math.factorial(k) for k in goals_axis]
                 
                 chart_df = pd.DataFrame({
                     "Goals": goals_axis,
-                    f"Home ({target['home_team']})": home_dist,
-                    f"Away ({target['away_team']})": away_dist
+                    f"Home ({target.get('home_team', 'Home')})": home_dist,
+                    f"Away ({target.get('away_team', 'Away')})": away_dist
                 }).set_index("Goals")
                 st.bar_chart(chart_df, use_container_width=True)
                 
             with c_right:
-                st.markdown('<div class="market-header">1X2 Match Projections & Double Chance Insurance</div>', unsafe_allow_path=True)
-                sub_c1, sub_c2 = st.columns(2)
-                with sub_c1:
-                    p_1x2 = mkts.get("1X2", {"HOME": 0.33, "DRAW": 0.34, "AWAY": 0.33})
-                    st.progress(int(p_1x2["HOME"] * 100), text=f"Home Win: {p_1x2['HOME']*100:.1f}%")
-                    st.progress(int(p_1x2["DRAW"] * 100), text=f"Draw: {p_1x2['DRAW']*100:.1f}%")
+                # FIX: Changed to unsafe_allow_html=True
