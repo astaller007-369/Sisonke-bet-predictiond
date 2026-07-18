@@ -1,0 +1,45 @@
+{
+  "metrics": {
+    "overall_win_pct": 68.4,
+    "accuracy_28_day": 71.2,
+    "total_backtested": 1420
+  },
+  "performance_audit": {
+    "domestic_league_suite": { "dynamic_brier_skill_score": 0.142 },
+    "international_tournament_suite": { "dynamic_brier_skill_score": 0.118 }
+  },
+  "live_games": [
+    {
+      "home_team": "Arsenal",
+      "away_team": "Chelsea",
+      "current_score": "2 - 1",
+      "minute": 64,
+      "league_name": "England Premier League & Cups",
+      "possession": "54% / 46%",
+      "home_sot": 5,
+      "away_sot": 3,
+      "home_dangerous_attacks": 42,
+      "away_dangerous_attacks": 31,
+      "second_half_forecast": {
+        "sh_probabilities": { "HOME": 0.58, "DRAW": 0.24, "AWAY": 0.18 }
+      }
+    }
+  ],
+  "future_predictions": [
+    {
+      "match_timestamp": "2026-07-22 20:00:00",
+      "league_key": "england",
+      "home_team": "Liverpool",
+      "away_team": "Real Madrid",
+      "predicted_outcome_1x2": "HOME",
+      "tournament_mode_active": true,
+      "value_bets_detected": [],
+      "expected_goals": { "home": 1.85, "away": 1.25 },
+      "market_projections": {
+        "1X2": { "HOME": 0.48, "DRAW": 0.26, "AWAY": 0.26 },
+        "over_under_2.5": { "OVER": 0.61, "UNDER": 0.39 },
+        "btts": { "YES": 0.58, "NO": 0.42 }
+      }
+    }
+  ]
+}
