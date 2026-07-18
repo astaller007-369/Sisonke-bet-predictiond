@@ -7,7 +7,6 @@ import streamlit as st
 
 st.set_page_config(page_title="Sisonke Bet Predictions", page_icon="⚽", layout="wide")
 
-# FIX: Changed unsafe_allow_path=True to unsafe_allow_html=True to prevent structural layout crashes
 st.markdown("""
     <style>
     .stApp { background-color: #0b0f19; color: #f1f5f9; }
@@ -184,8 +183,8 @@ with tab_predictions:
             
             c_left, c_right = st.columns(2)
             
+            # Left column: Poisson curves block layout
             with c_left:
-                # FIX: Changed to unsafe_allow_html=True
                 st.markdown('<div class="market-header">Poisson Curve Probability Matrix Density</div>', unsafe_allow_html=True)
                 exp_g = target.get("expected_goals", {"home": 1.4, "away": 1.1})
                 goals_axis = np.arange(0, 6)
@@ -199,5 +198,6 @@ with tab_predictions:
                 }).set_index("Goals")
                 st.bar_chart(chart_df, use_container_width=True)
                 
+            # Right column: 1X2 and Double Chance sliders layout
             with c_right:
-                # FIX: Changed to unsafe_allow_html=True
+                st.markdown('<div class="market-header">1X2 Match Projections & Double Chance Insurance</div>', unsafe_allow_html=True)
